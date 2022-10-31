@@ -12,20 +12,22 @@ Let secret word = letter
 
 example:
 
-# #        
+# #
 L E T T E R
 T R O P H Y
 
 */
-#include<iostream>
-#include<cstring>
-#include<fstream>
-#include<random>
+#include <iostream>
+#include <cstring>
+#include <fstream>
+#include <random>
 
 const std::string path = "./words.txt";
+const int tries = 6;
 
-//get a random word from the file words.txt
-std::string random_word() {
+// get a random word from the file words.txt
+std::string random_word()
+{
     std::ifstream input(path);
     std::string buffer;
 
@@ -34,18 +36,21 @@ std::string random_word() {
 
     // get number of lines in file
     int lines = 0;
-    while(std::getline(input, buffer)) {
+    while (std::getline(input, buffer))
+    {
         lines++;
     }
     // return to beginning of file
     input.clear();
     input.seekg(0);
-    int random_index = random()%lines + 1;
+    int random_index = random() % lines + 1;
 
-    //get random word
+    // get random word
     lines = 0;
-    while(std::getline(input,buffer)) {
-        if(lines == random_index) {
+    while (std::getline(input, buffer))
+    {
+        if (lines == random_index)
+        {
             return buffer;
         }
         lines++;
@@ -64,25 +69,32 @@ secret word: DALILA
 guess: MANILA
 return: {0,2,0,2,2,2}
 */
-void check(const std::string guess, const std::string secret_word, int* array) {
-    //for each letter in guess, loop through secret_word and set indexes[i] to 1 if the letter is in secret_word, 2 if it is and it's in the same position too
-    for(int i = 0; i < 6; i++) {
-        for(int j = 0; j < 6; j++) {
-            if (i == j && guess[i] == secret_word[j]) {
+void check(const std::string guess, const std::string secret_word, int array[])
+{
+    // for each letter in guess, loop through secret_word and set indexes[i] to 1 if the letter is in secret_word, 2 if it is and it's in the same position too
+    // array is guaranteed to be of size guess.length()
+    for (int i = 0; i < guess.length(); i++)
+    {
+        for (int j = 0; j < secret_word.length(); j++)
+        {
+            if (i == j && guess[i] == secret_word[j])
+            {
                 array[i] = 2;
                 break;
             }
-            else if (guess[i] == secret_word[j]) {
+            else if (guess[i] == secret_word[j])
+            {
                 array[i] = 1;
             }
         }
     }
 }
 
-
-//prints ' ' if the letter isn't present, '#' if it is in the wrong position, '@' if it is in the right position
-void print_check(const int array[]) {
-    for(int i = 0; i < 6; i++) {
+// prints ' ' if the letter isn't present, '#' if it is in the wrong position, '@' if it is in the right position
+void print_check(const int array[], const int size)
+{
+    for (int i = 0; i < size; i++)
+    {
         switch (array[i])
         {
         case 0:
@@ -91,7 +103,7 @@ void print_check(const int array[]) {
         case 1:
             std::cout << "# ";
             break;
-        case 2: 
+        case 2:
             std::cout << "@ ";
             break;
         }
@@ -99,80 +111,100 @@ void print_check(const int array[]) {
     std::cout << std::endl;
 }
 
-//print a word with each character separated by whitespace
-void print_word(const std::string word) {
-    for (int i = 0; i < 6; i++) {
+// print a word with each character separated by whitespace
+void print_word(const std::string word)
+{
+    for (int i = 0; i < word.length(); i++)
+    {
         std::cout << word[i] << " ";
     }
 }
 
-//set all elements in an array of length 6 to 0
-void reset(int array[]) {
-    for(int i = 0; i < 6; i++) {
+// set all elements in an array of length 6 to 0
+void reset(int array[], const int size)
+{
+    for (int i = 0; i < size; i++)
+    {
         array[i] = 0;
     }
 }
 
-//check if won (ie all elements in the array are equal to 2)
-bool won(const int array[]) {
+// check if won (ie all elements in the array are equal to 2)
+bool won(const int array[], const int size)
+{
     bool flag = true;
-    for(int i = 0; i < 6; i++) {
-        if (array[i] != 2) return false;
+    for (int i = 0; i < size; i++)
+    {
+        if (array[i] != 2)
+            return false;
     }
     return true;
 }
 
-int main() {
+int main()
+{
     bool flag = true;
-    //main game loop
-    while(flag) {
-        //get random word
+    // main game loop
+    while (flag)
+    {
+        // get random word
         std::string secret_word = random_word();
         std::string guess, play_again;
-        
-        std::cout << "GUESS THE WORD!\n" << std::endl;
+        // define indexes array
+        int *indexes = new int[secret_word.length()];
+
         bool guessed = false;
-        //cycle 6 times (6 guesses)
-        for(int i = 0; i < 6 && !guessed; i++) {
-            //initialize indexes array to 0
-            int indexes[6] = {0};
-            //ask for input from user, then turn it to uppercase
-            do{
+        std::cout << "GUESS THE WORD!\n" << std::endl;
+        std::cout << "HINT: THE WORD HAS " << secret_word.length() << " LETTERS" << std::endl;
+        // cycle 6 times (6 guesses)
+        for (int i = 0; i < tries && !guessed; i++)
+        {
+            // set indexes array's elements to 0
+            reset(indexes, secret_word.length());
+
+            // ask for input from user, then turn it to uppercase
+            do
+            {
                 std::cin >> guess;
-            } while(guess.length() != 6);
-            for(auto &c : guess) c = toupper(c);
+            } while (guess.length() != secret_word.length());
+            for (auto &c : guess)
+                c = toupper(c);
 
-
-            //print inputted word
+            // print inputted word
             print_word(guess);
-             std::cout << "  try #" << i+1 << std::endl;
+            std::cout << "  try #" << i + 1 << std::endl;
 
-            //generate index array and print the result
+            // generate index array and print the result
             check(guess, secret_word, indexes);
-            print_check(indexes);
+            print_check(indexes, secret_word.length());
 
-            //winning case
-            if(won(indexes)) {
+            // winning case
+            if (won(indexes, secret_word.length()))
+            {
                 std::cout << "YOU WON!!!" << std::endl;
                 guessed = true;
             }
-            
         }
 
-        //losing case
-        if(!guessed) {
+        // losing case
+        if (!guessed)
+        {
             std::cout << "YOU LOST!!" << std::endl;
             std::cout << "THE WORD WAS " << secret_word << std::endl;
         }
 
-        //handle end of game
+        // handle end of game
         std::cout << "PLAY AGAIN? Y/N " << std::endl;
         std::cin >> play_again;
-        if (play_again == "n" || play_again == "N") {
+        if (play_again == "n" || play_again == "N")
+        {
             flag = false;
-            }
-        //print separator
-        std::cout << "============\n" << std::endl; 
+        }
+
+        // deallocate indexes array
+        delete indexes;
+        // clear terminal
+        system("clear");
     }
     return 0;
 }
